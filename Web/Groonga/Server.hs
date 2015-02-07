@@ -6,8 +6,8 @@ import Data.Monoid (mconcat)
 import Bindings.Groonga.Raw (C'_grn_ctx)
 import qualified Bindings.Groonga.CommandAPI as Groonga
 import qualified Data.Text.Lazy as L
-import Control.Monad.IO.Class
-import Foreign.Ptr
+import Control.Monad.IO.Class (liftIO)
+import Foreign.Ptr (Ptr)
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 
 type GrnCtx = Ptr C'_grn_ctx
