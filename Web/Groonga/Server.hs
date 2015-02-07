@@ -8,6 +8,7 @@ import qualified Bindings.Groonga.CommandAPI as Groonga
 import qualified Data.Text.Lazy as L
 import Control.Monad.IO.Class
 import Foreign.Ptr
+import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 
 type GrnCtx = Ptr C'_grn_ctx
 
@@ -19,6 +20,7 @@ db dbpath = do
 
 app :: GrnCtx -> String -> ScottyM ()
 app ctx dbpath = do
+    middleware logStdoutDev
     get "/version" $ do
       ver <- get_groonga_version
       text $ mconcat ["{\"Groonga Version\": \"", ver, "\"}"]

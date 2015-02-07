@@ -23,6 +23,7 @@ executable Haroonga-httpd
                      , text     >= 1.2     && < 2.0
                      , transformers >= 0.3 && < 0.5
                      , scotty   >= 0.9     && < 1.0
+                     , wai-extra >= 3.0    && < 3.1
                      , haroonga >= 0.1.0.0 && < 0.2.0.0
   hs-source-dirs:      .
   default-language:    Haskell2010
