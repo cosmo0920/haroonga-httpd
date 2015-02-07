@@ -18,12 +18,14 @@ cabal-version:       >=1.10
 executable Haroonga-httpd
   main-is:             Main.hs
   other-modules:       Web.Groonga.Server
-  -- other-extensions:
+                       Web.Groonga.App
+  default-extensions:  OverloadedStrings
   build-depends:       base     >= 4.6     && < 5
                      , text     >= 1.2     && < 2.0
                      , transformers >= 0.3 && < 0.5
                      , scotty   >= 0.9     && < 1.0
                      , wai-extra >= 3.0    && < 3.1
+                     , optparse-applicative >= 0.11 && < 0.12
                      , haroonga >= 0.1.0.0 && < 0.2.0.0
   hs-source-dirs:      .
   default-language:    Haskell2010

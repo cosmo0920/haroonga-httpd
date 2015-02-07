@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 module Web.Groonga.Server where
 
 import Web.Scotty
