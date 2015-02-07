@@ -20,12 +20,12 @@ app ctx dbpath = do
     get "/version" $ do
       ver <- get_groonga_version
       text $ mconcat ["{\"Groonga Version\": \"", ver, "\"}"]
-      setHeader "Content-Type" "application/json; charset=utf-8"
+      set_json_header
     get "/d/:command" $ do
       command <- param "command"
       response <- send_groonga_command ctx (L.unpack command)
       text (L.pack response) -- just to send response. Don't decode with Aeson!
-      setHeader "Content-Type" "application/json; charset=utf-8"
+      set_json_header
 
     where
       get_groonga_version :: ActionM L.Text
@@ -38,3 +38,6 @@ app ctx dbpath = do
         _ <- Groonga.grn_database_open ctx dbpath
         response <- Groonga.grn_execute_command ctx command
         return response
+
+      set_json_header :: ActionM ()
+      set_json_header = setHeader "Content-Type" "application/json; charset=utf-8"
