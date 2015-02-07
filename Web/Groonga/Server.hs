@@ -16,7 +16,6 @@ db :: String -> IO ()
 db dbpath = do
   ctx <- Groonga.grn_ctx_init
   create_db_if_needed ctx dbpath
-  return ()
 
 create_db_if_needed :: GrnCtx -> String -> IO ()
 create_db_if_needed ctx dbpath = do
