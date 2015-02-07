@@ -1,12 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Web.Groonga.Server where
 
-import Bindings.Groonga.CommandAPI
 import Web.Scotty
 import Data.Monoid (mconcat)
 import Bindings.Groonga.Raw (C'_grn_ctx)
 import qualified Bindings.Groonga.CommandAPI as Groonga
-import qualified Data.Text as T
 import qualified Data.Text.Lazy as L
 import Control.Monad.IO.Class
 import Foreign.Ptr
