@@ -22,16 +22,18 @@ app ctx dbpath = do
       html $ mconcat ["<h1>Groonga Version: ", ver]
     get "/d/:command" $ do
       command <- param "command"
-      sendGroongaCommand ctx (L.unpack command)
-      html $ mconcat ["<h1>sent command: ", command, "</h1>"]
+      response <- sendGroongaCommand ctx (L.unpack command)
+      text (L.pack response) -- just to send response. Don't decode with Aeson!
+      setHeader "Content-Type" "application/json; charset=utf-8"
+
     where
       getGroongaVersion :: ActionM L.Text
       getGroongaVersion = liftIO $ do
         version <- Groonga.grn_get_version
         return (L.pack version)
 
-      sendGroongaCommand :: Ptr C'_grn_ctx -> String -> ActionM ()
+      sendGroongaCommand :: Ptr C'_grn_ctx -> String -> ActionM String
       sendGroongaCommand ctx command = liftIO $ do
         _ <- Groonga.grn_database_open ctx dbpath
-        _ <- Groonga.grn_execute_command ctx command
-        return ()
+        response <- Groonga.grn_execute_command ctx command
+        return response
