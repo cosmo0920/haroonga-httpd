@@ -21,10 +21,12 @@ db dbpath = do
 app :: GrnCtx -> String -> ScottyM ()
 app ctx dbpath = do
     middleware logStdoutDev
+
     get "/version" $ do
       ver <- get_groonga_version
       text $ mconcat ["{\"Groonga Version\": \"", ver, "\"}"]
       set_json_header
+
     get "/d/:command" $ do
       command <- param "command"
       response <- send_groonga_command ctx (L.unpack command)
