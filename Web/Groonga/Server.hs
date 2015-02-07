@@ -22,7 +22,7 @@ create_db_if_needed :: GrnCtx -> String -> IO ()
 create_db_if_needed ctx dbpath = do
   result <- doesFileExist dbpath
   if result
-    then putStrLn $ "skip create database. Already exists " ++ dbpath ++ "."
+    then putStrLn $ "Skip create database. Already exists " ++ dbpath ++ "."
     else do
       Groonga.grn_database_create ctx dbpath
       return ()
