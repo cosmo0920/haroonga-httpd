@@ -24,11 +24,13 @@ create_db_if_needed ctx dbpath = do
   if result
     then putStrLn $ "Skip create database. Already exists " ++ dbpath ++ "."
     else do
-      Groonga.grn_database_create ctx dbpath
+      _ <- Groonga.grn_database_create ctx dbpath
       return ()
+  _ <- Groonga.grn_ctx_fin ctx
+  return ()
 
-app :: GrnCtx -> String -> ScottyM ()
-app ctx dbpath = do
+app :: String -> ScottyM ()
+app dbpath = do
     middleware logStdoutDev
 
     get "/version" $ do
@@ -38,7 +40,7 @@ app ctx dbpath = do
 
     get "/d/:command" $ do
       command <- param "command"
-      response <- send_groonga_command ctx (L.unpack command)
+      response <- send_groonga_command (L.unpack command)
       text (L.pack response) -- just to send response. Don't decode with Aeson!
       set_json_header
 
@@ -48,10 +50,12 @@ app ctx dbpath = do
         version <- Groonga.grn_get_version
         return (L.pack version)
 
-      send_groonga_command :: GrnCtx -> String -> ActionM String
-      send_groonga_command ctx command = liftIO $ do
+      send_groonga_command :: String -> ActionM String
+      send_groonga_command command = liftIO $ do
+        ctx <- Groonga.grn_ctx_init
         _ <- Groonga.grn_database_open ctx dbpath
         response <- Groonga.grn_execute_command ctx command
+        _ <- Groonga.grn_ctx_fin ctx
         return response
 
       set_json_header :: ActionM ()

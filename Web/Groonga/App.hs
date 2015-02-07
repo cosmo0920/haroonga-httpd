@@ -22,8 +22,8 @@ config = Config
 
 server :: Config -> IO ()
 server (Config port dbpath) = do
-  ctx <- db dbpath
-  scotty port $ app ctx dbpath
+  _ <- db dbpath
+  scotty port $ app dbpath
 
 defaultMain :: IO ()
 defaultMain = do
