@@ -9,13 +9,15 @@ import qualified Data.Text.Lazy as L
 import Control.Monad.IO.Class
 import Foreign.Ptr
 
-db :: String -> IO (Ptr C'_grn_ctx)
+type GrnCtx = Ptr C'_grn_ctx
+
+db :: String -> IO GrnCtx
 db dbpath = do
   ctx <- Groonga.grn_ctx_init
   Groonga.grn_database_create ctx dbpath
   return ctx
 
-app :: Ptr C'_grn_ctx -> String -> ScottyM ()
+app :: GrnCtx -> String -> ScottyM ()
 app ctx dbpath = do
     get "/version" $ do
       ver <- get_groonga_version
@@ -33,7 +35,7 @@ app ctx dbpath = do
         version <- Groonga.grn_get_version
         return (L.pack version)
 
-      send_groonga_command :: Ptr C'_grn_ctx -> String -> ActionM String
+      send_groonga_command :: GrnCtx -> String -> ActionM String
       send_groonga_command ctx command = liftIO $ do
         _ <- Groonga.grn_database_open ctx dbpath
         response <- Groonga.grn_execute_command ctx command
