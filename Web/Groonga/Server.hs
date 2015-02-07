@@ -8,14 +8,24 @@ import qualified Data.Text.Lazy as L
 import Control.Monad.IO.Class (liftIO)
 import Foreign.Ptr (Ptr)
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
+import System.Directory
 
 type GrnCtx = Ptr C'_grn_ctx
 
 db :: String -> IO GrnCtx
 db dbpath = do
   ctx <- Groonga.grn_ctx_init
-  Groonga.grn_database_create ctx dbpath
+  create_db_if_needed ctx dbpath
   return ctx
+
+create_db_if_needed :: GrnCtx -> String -> IO ()
+create_db_if_needed ctx dbpath = do
+  result <- doesFileExist dbpath
+  if result
+    then putStrLn $ "skip create database. Already exists " ++ dbpath ++ "."
+    else do
+      Groonga.grn_database_create ctx dbpath
+      return ()
 
 app :: GrnCtx -> String -> ScottyM ()
 app ctx dbpath = do
