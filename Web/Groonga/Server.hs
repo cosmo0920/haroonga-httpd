@@ -54,8 +54,11 @@ app dbpath = do
         ctx <- Groonga.grn_ctx_init
         _ <- Groonga.grn_database_open ctx dbpath
         response <- Groonga.grn_execute_command ctx command
+        errbuf <- Groonga.grn_get_errbuf ctx
         _ <- Groonga.grn_ctx_fin ctx
-        return response
+        if length errbuf > 0
+          then return $ "{\"error reason\": \"" ++  errbuf ++ "\"}"
+          else return response
 
       set_json_header :: ActionM ()
       set_json_header = setHeader "Content-Type" "application/json; charset=utf-8"
