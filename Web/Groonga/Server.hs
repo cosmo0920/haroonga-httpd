@@ -12,11 +12,11 @@ import System.Directory
 
 type GrnCtx = Ptr C'_grn_ctx
 
-db :: String -> IO GrnCtx
+db :: String -> IO ()
 db dbpath = do
   ctx <- Groonga.grn_ctx_init
   create_db_if_needed ctx dbpath
-  return ctx
+  return ()
 
 create_db_if_needed :: GrnCtx -> String -> IO ()
 create_db_if_needed ctx dbpath = do
