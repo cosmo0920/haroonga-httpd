@@ -14,7 +14,7 @@ config = Config
          ( long "port"
         <> metavar "NUMBER"
         <> value 3000
-        <> help "Specify port number" )
+        <> help "Specify port number [default: 3000]" )
      <*> strOption
          ( long "dbpath"
         <> metavar "DBPATH"
