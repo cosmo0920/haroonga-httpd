@@ -17,9 +17,10 @@ db dbpath = do
 
 app :: Ptr C'_grn_ctx -> String -> ScottyM ()
 app ctx dbpath = do
-    get "/d/version" $ do
+    get "/version" $ do
       ver <- getGroongaVersion
-      html $ mconcat ["<h1>Groonga Version: ", ver]
+      text $ mconcat ["{\"Groonga Version\": \"", ver, "\"}"]
+      setHeader "Content-Type" "application/json; charset=utf-8"
     get "/d/:command" $ do
       command <- param "command"
       response <- sendGroongaCommand ctx (L.unpack command)
