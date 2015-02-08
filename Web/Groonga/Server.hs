@@ -54,8 +54,8 @@ app dbpath = do
       status internalServerError500
       set_json_header
 
-    get "/d/:command" $ do
-      command <- param "command"
+    get (regex "^/d/(.*)$") $ do
+      command <- param "1"
       response <- send_groonga_command $ L.unpack command
       case response of
         Left res -> do
