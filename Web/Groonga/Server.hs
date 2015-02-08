@@ -1,6 +1,7 @@
 module Web.Groonga.Server where
 
 import Web.Scotty
+import Network.HTTP.Types
 import Data.Monoid (mconcat)
 import Bindings.Groonga.Raw (C'_grn_ctx)
 import qualified Bindings.Groonga.CommandAPI as Groonga
@@ -9,6 +10,7 @@ import Control.Monad.IO.Class (liftIO)
 import Foreign.Ptr (Ptr)
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import System.Directory
+import Data.Time
 
 type GrnCtx = Ptr C'_grn_ctx
 
@@ -40,8 +42,14 @@ app dbpath = do
     get "/d/:command" $ do
       command <- param "command"
       response <- send_groonga_command (L.unpack command)
-      text (L.pack response) -- just to send response. Don't decode with Aeson!
-      set_json_header
+      case response of
+        Left res -> do
+          text (L.pack res)
+          status internalServerError500
+          set_json_header
+        Right res -> do
+          text (L.pack res)
+          set_json_header
 
     where
       get_groonga_version :: ActionM L.Text
@@ -49,16 +57,18 @@ app dbpath = do
         version <- Groonga.grn_get_version
         return (L.pack version)
 
-      send_groonga_command :: String -> ActionM String
+      send_groonga_command :: String -> ActionM (Either String String)
       send_groonga_command command = liftIO $ do
         ctx <- Groonga.grn_ctx_init
         _ <- Groonga.grn_database_open ctx dbpath
+        start_at <- getCurrentTime
         response <- Groonga.grn_execute_command ctx command
+        done_at <- getCurrentTime
         errbuf <- Groonga.grn_get_errbuf ctx
         _ <- Groonga.grn_ctx_fin ctx
         if length errbuf > 0
-          then return $ "{\"error reason\": \"" ++  errbuf ++ "\"}"
-          else return response
+          then return $ Left $ concat ["[", "[", (show (-1)), ",", (show start_at), ",", (show $ diffUTCTime done_at start_at), ",\"", errbuf, "\",[]", "]"]
+          else return $ Right $ concat ["[", "[", (show   0 ), ",", (show start_at), ",", (show $ diffUTCTime done_at start_at), "],", response, "]"]
 
       set_json_header :: ActionM ()
       set_json_header = setHeader "Content-Type" "application/json; charset=utf-8"
