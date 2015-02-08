@@ -37,12 +37,20 @@ app dbpath = do
     middleware logStdoutDev
 
     get "/version" $ do
+      start_at <- liftIO $ get_current_time_as_double
       ver <- get_groonga_version
-      text $ mconcat ["{\"Groonga Version\": \"", ver, "\"}"]
+      done_at <- liftIO $ get_current_time_as_double
+      let buf = concat ["{\"Groonga Version\": \"", (L.unpack ver), "\"}"]
+      let response = format_response 0 start_at done_at buf
+      text $ L.pack response
       set_json_header
 
     get "/d/" $ do
-      text $ "{\"error\":\"empty param.\"}"
+      start_at <- liftIO $ get_current_time_as_double
+      done_at <- liftIO $ get_current_time_as_double
+      let errbuf = "empty param."
+      let response = format_err_response (-1) start_at done_at errbuf
+      text $ L.pack response
       status internalServerError500
       set_json_header
 
