@@ -12,6 +12,7 @@ import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import System.Directory
 import Data.Time
 import System.Locale
+import Control.Applicative ((<$>))
 
 type GrnCtx = Ptr C'_grn_ctx
 
@@ -62,9 +63,9 @@ app dbpath = do
       send_groonga_command command = liftIO $ do
         ctx <- Groonga.grn_ctx_init
         _ <- Groonga.grn_database_open ctx dbpath
-        start_at <- getCurrentTime
+        start_at <- getCurrentTimeAsDouble
         response <- Groonga.grn_execute_command ctx command
-        done_at <- getCurrentTime
+        done_at <- getCurrentTimeAsDouble
         errbuf <- Groonga.grn_get_errbuf ctx
         _ <- Groonga.grn_ctx_fin ctx
         if length errbuf > 0
@@ -74,20 +75,23 @@ app dbpath = do
       set_json_header :: ActionM ()
       set_json_header = setHeader "Content-Type" "application/json; charset=utf-8"
 
-      format_time_with_picosec :: UTCTime -> String
-      format_time_with_picosec time = formatTime defaultTimeLocale "%s.%q" time
-
+      treat_as_string :: String -> String
       treat_as_string str = concat ["\"", str, "\""]
 
-      format_response :: Int -> UTCTime -> UTCTime -> String -> String
+      getCurrentTimeAsDouble :: IO Double
+      getCurrentTimeAsDouble = do
+        epoch_double <- (read <$> formatTime defaultTimeLocale "%s.%q" <$> getCurrentTime) :: IO Double
+        return epoch_double
+
+      format_response :: Int -> Double -> Double -> String -> String
       format_response status start_at done_at response =
         concat ["[", "[", (show status), ",",
-                          (format_time_with_picosec start_at), ",",
-                          (treat_as_string $ show $ diffUTCTime done_at start_at), "],", response, "]"]
+                          (show start_at), ",",
+                          (show $ (done_at - start_at)), "],", response, "]"]
 
-      format_err_response :: Int -> UTCTime -> UTCTime -> String -> String
+      format_err_response :: Int -> Double -> Double -> String -> String
       format_err_response status start_at done_at errbuf =
         concat ["[", "[", (show status), ",",
-                          (format_time_with_picosec start_at), ",",
-                          (treat_as_string $ show $ diffUTCTime done_at start_at), ",",
+                          (show start_at), ",",
+                          (show $ (done_at - start_at)), ",",
                           (treat_as_string errbuf), ",[]", "]]"]
