@@ -83,13 +83,13 @@ app dbpath = do
         epoch_double <- (read <$> formatTime defaultTimeLocale "%s.%q" <$> getCurrentTime) :: IO Double
         return epoch_double
 
-      format_response :: Int -> Double -> Double -> String -> String
+      format_response :: (Show a, Num a) => Int -> a -> a -> String -> String
       format_response status start_at done_at response =
         concat ["[", "[", (show status), ",",
                           (show start_at), ",",
                           (show $ (done_at - start_at)), "],", response, "]"]
 
-      format_err_response :: Int -> Double -> Double -> String -> String
+      format_err_response :: (Show a, Num a) => Int -> a -> a -> String -> String
       format_err_response status start_at done_at errbuf =
         concat ["[", "[", (show status), ",",
                           (show start_at), ",",
