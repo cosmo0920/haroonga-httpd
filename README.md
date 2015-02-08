@@ -9,6 +9,7 @@ How to Use:
 
 ```bash
 $ cabal install --only-dependencies
+$ cabal build
 $ ./dist/build/haroonga-httpd/haroonga-httpd [--port 3000] --dbpath db/test.db
 ```
 
