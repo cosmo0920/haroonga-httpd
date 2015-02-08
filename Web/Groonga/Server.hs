@@ -11,6 +11,7 @@ import Foreign.Ptr (Ptr)
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import System.Directory
 import Data.Time
+import System.Locale
 
 type GrnCtx = Ptr C'_grn_ctx
 
@@ -41,14 +42,14 @@ app dbpath = do
 
     get "/d/:command" $ do
       command <- param "command"
-      response <- send_groonga_command (L.unpack command)
+      response <- send_groonga_command $ L.unpack command
       case response of
         Left res -> do
-          text (L.pack res)
+          text $ L.pack res
           status internalServerError500
           set_json_header
         Right res -> do
-          text (L.pack res)
+          text $ L.pack res
           set_json_header
 
     where
@@ -67,8 +68,26 @@ app dbpath = do
         errbuf <- Groonga.grn_get_errbuf ctx
         _ <- Groonga.grn_ctx_fin ctx
         if length errbuf > 0
-          then return $ Left $ concat ["[", "[", (show (-1)), ",", (show start_at), ",", (show $ diffUTCTime done_at start_at), ",\"", errbuf, "\",[]", "]"]
-          else return $ Right $ concat ["[", "[", (show   0 ), ",", (show start_at), ",", (show $ diffUTCTime done_at start_at), "],", response, "]"]
+          then return $ Left $ format_err_response (-1) start_at done_at errbuf
+          else return $ Right $ format_response 0 start_at done_at response
 
       set_json_header :: ActionM ()
       set_json_header = setHeader "Content-Type" "application/json; charset=utf-8"
+
+      format_time_with_picosec :: UTCTime -> String
+      format_time_with_picosec time = formatTime defaultTimeLocale "%s.%q" time
+
+      treat_as_string str = concat ["\"", str, "\""]
+
+      format_response :: Int -> UTCTime -> UTCTime -> String -> String
+      format_response status start_at done_at response =
+        concat ["[", "[", (show status), ",",
+                          (format_time_with_picosec start_at), ",",
+                          (treat_as_string $ show $ diffUTCTime done_at start_at), "],", response, "]"]
+
+      format_err_response :: Int -> UTCTime -> UTCTime -> String -> String
+      format_err_response status start_at done_at errbuf =
+        concat ["[", "[", (show status), ",",
+                          (format_time_with_picosec start_at), ",",
+                          (treat_as_string $ show $ diffUTCTime done_at start_at), ",",
+                          (treat_as_string errbuf), ",[]", "]]"]
