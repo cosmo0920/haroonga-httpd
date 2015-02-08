@@ -63,9 +63,9 @@ app dbpath = do
       send_groonga_command command = liftIO $ do
         ctx <- Groonga.grn_ctx_init
         _ <- Groonga.grn_database_open ctx dbpath
-        start_at <- getCurrentTimeAsDouble
+        start_at <- get_current_time_as_double
         response <- Groonga.grn_execute_command ctx command
-        done_at <- getCurrentTimeAsDouble
+        done_at <- get_current_time_as_double
         errbuf <- Groonga.grn_get_errbuf ctx
         _ <- Groonga.grn_ctx_fin ctx
         if length errbuf > 0
@@ -78,8 +78,8 @@ app dbpath = do
       treat_as_string :: String -> String
       treat_as_string str = concat ["\"", str, "\""]
 
-      getCurrentTimeAsDouble :: IO Double
-      getCurrentTimeAsDouble = do
+      get_current_time_as_double :: IO Double
+      get_current_time_as_double = do
         epoch_double <- (read <$> formatTime defaultTimeLocale "%s.%q" <$> getCurrentTime) :: IO Double
         return epoch_double
 
