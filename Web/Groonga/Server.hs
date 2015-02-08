@@ -41,6 +41,11 @@ app dbpath = do
       text $ mconcat ["{\"Groonga Version\": \"", ver, "\"}"]
       set_json_header
 
+    get "/d/" $ do
+      text $ "{\"error\":\"empty param.\"}"
+      status internalServerError500
+      set_json_header
+
     get "/d/:command" $ do
       command <- param "command"
       response <- send_groonga_command $ L.unpack command
@@ -52,6 +57,10 @@ app dbpath = do
         Right res -> do
           text $ L.pack res
           set_json_header
+
+    notFound $ do
+      status notFound404
+      set_json_header
 
     where
       get_groonga_version :: ActionM L.Text
