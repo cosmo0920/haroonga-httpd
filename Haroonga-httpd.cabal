@@ -33,3 +33,8 @@ executable haroonga-httpd
                      , haroonga             >= 0.1.0.0 && < 0.2.0.0
   hs-source-dirs:      .
   default-language:    Haskell2010
+
+
+source-repository head
+  type: git
+  location: git@github.com:cosmo0920/haroonga-httpd.git
