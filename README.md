@@ -13,7 +13,7 @@ How to Use:
 $ cabal install --only-dependencies
 $ cabal build
 $ ./dist/build/haroonga-httpd/haroonga-httpd [--port 3000] --dbpath target_database
-$ curl http://127.0.0.1/d/<groonga command>
+$ curl http://127.0.0.1[:3000]/d/<groonga command>
 ```
 
 ## LICENSE
